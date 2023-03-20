@@ -20,7 +20,7 @@ type LocalCache struct {
 	onEvicted func(key string, val any)
 }
 
-func NewLocalCache() {
+func NewLocalCache(onEvicted func(key string, val any)) *LocalCache {
 	l := &LocalCache{
 		close: make(chan struct{}),
 	}
@@ -49,6 +49,8 @@ func NewLocalCache() {
 			}
 		}
 	}()
+
+	return l
 }
 
 func (l *LocalCache) delete(key string, val any) {
