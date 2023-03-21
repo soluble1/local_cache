@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+type LocalCacheOption func(l *LocalCache)
+
 type LocalCache struct {
 	// data 存储不用sync.Map，因为在控制过期时间的时候需要一个实实在在的锁进行控制
 	data  map[string]any
@@ -20,9 +22,19 @@ type LocalCache struct {
 	onEvicted func(key string, val any)
 }
 
-func NewLocalCache(onEvicted func(key string, val any)) *LocalCache {
+func WithOnEvicted(o func(key string, val any)) LocalCacheOption {
+	return func(l *LocalCache) {
+		l.onEvicted = o
+	}
+}
+
+func NewLocalCache(opts ...LocalCacheOption) *LocalCache {
 	l := &LocalCache{
 		close: make(chan struct{}),
+	}
+
+	for _, opt := range opts {
+		opt(l)
 	}
 
 	// 轮询检查是否有数据过期
