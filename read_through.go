@@ -25,11 +25,11 @@ func (r *ReadThroughCache) Get(ctx context.Context, key string) (any, error) {
 	// 2.读缓存失败
 	if err != nil {
 		// 尽管加锁了在并发写的时候任然会导致数据不一致
-		r.mutex.Lock()
-		defer r.mutex.Unlock()
 
 		// 2.1.从 DB 中拿数据
+		r.mutex.RLock()
 		val, err = r.Load(ctx, key)
+		r.mutex.RUnlock()
 
 		// *不加锁* 第一个 G1 进来key1 = value1
 		// 	  	   中间有人更新了数据库
@@ -41,7 +41,9 @@ func (r *ReadThroughCache) Get(ctx context.Context, key string) (any, error) {
 			return nil, fmt.Errorf("cache: 无法加载数据，%w", err)
 		}
 		// 2.2.从 DB 中拿数据成功更新缓存
+		r.mutex.Lock()
 		err = r.Cache.Set(ctx, key, val, r.Expiration)
+		r.mutex.Unlock()
 
 		// *不加锁* 1.G1 先进来，数据一致
 		//         2.G2 先进来，数据不一致

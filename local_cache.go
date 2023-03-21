@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"cache/internal/err"
 	"context"
 	"sync"
 	"time"
@@ -30,6 +29,7 @@ func WithOnEvicted(o func(key string, val any)) LocalCacheOption {
 
 func NewLocalCache(opts ...LocalCacheOption) *LocalCache {
 	l := &LocalCache{
+		data:  make(map[string]any),
 		close: make(chan struct{}),
 	}
 
@@ -78,7 +78,7 @@ func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 	val, ok := l.data[key]
 	l.mutex.RUnlock()
 	if !ok {
-		return nil, err.NewErrKeyNotFound(key)
+		return nil, errKeyNotFound
 	}
 
 	itm := val.(*item)
@@ -90,13 +90,13 @@ func (l *LocalCache) Get(ctx context.Context, key string) (any, error) {
 		// double check
 		val, ok = l.data[key]
 		if !ok {
-			return nil, err.NewErrKeyNotFound(key)
+			return nil, errKeyNotFound
 		}
 		itm = val.(*item)
 		if itm.deadline.Before(time.Now()) {
 			l.delete(key, itm.val)
 		}
-		return nil, err.NewErrKeyNotFound(key)
+		return nil, errKeyNotFound
 	}
 	return itm.val, nil
 }

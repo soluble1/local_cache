@@ -19,6 +19,6 @@ func (w *WriteThroughCache) Set(ctx context.Context, key string, val any, expira
 	if err != nil {
 		return err
 	}
-	// 1.2 写DB成功
+	// 1.2 写DB成功 再写缓存
 	return w.Cache.Set(ctx, key, val, expiration)
 }
