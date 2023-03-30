@@ -17,6 +17,14 @@ type ReadThroughCache struct {
 	Loader
 }
 
+func NewReadThroughCache(c Cache, load Loader, expiration time.Duration) *ReadThroughCache {
+	return &ReadThroughCache{
+		Cache:      c,
+		Loader:     load,
+		Expiration: expiration,
+	}
+}
+
 func (r *ReadThroughCache) Get(ctx context.Context, key string) (any, error) {
 	// 1.读缓存
 	r.mutex.RLock()

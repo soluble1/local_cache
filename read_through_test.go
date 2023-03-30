@@ -12,7 +12,7 @@ import (
 )
 
 func TestReadThroughCache(t *testing.T) {
-	db, err := sql.Open("mysql", "root:root@tcp(:3307)/mydb?charset=utf8")
+	db, err := sql.Open("mysql", "root:root@tcp(120.46.196.48:3307)/mydb?charset=utf8")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,6 +31,7 @@ func TestReadThroughCache(t *testing.T) {
 			return val, err
 		}),
 	}
+	rtc.Expiration = time.Second * 3
 
 	//rtc.Cache.Set(context.Background(), "xiao", "xiao long ren", time.Second*3)
 	//rtc.Cache.Set(context.Background(), "ma", "ma jun da shi", time.Second*6)

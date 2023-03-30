@@ -132,7 +132,6 @@ func (l *LocalCache) Close() error {
 	return nil
 }
 
-// 考虑 sync.Pool 来复用
 type item struct {
 	val      any
 	deadline time.Time
